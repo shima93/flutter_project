@@ -19,7 +19,7 @@ class MyHomePage extends StatelessWidget {
         id: "t1", title: 'Nikie Sneakers', amount: 69.98, date: DateTime.now()),
     Transaction(
         id: "t2",
-        title: 'Weekly Groceries',
+        title: 'Weekly Groceriess',
         amount: 20.65,
         date: DateTime.now())
   ];
