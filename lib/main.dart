@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import './widgets/chart.dart';
 import './widgets/new_transaction.dart';
 import './widgets/transaction_list.dart';
@@ -94,6 +97,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final appBar = AppBar(
       title:
           Text('Personal Expenses', style: TextStyle(fontFamily: 'open sans')),
@@ -104,6 +109,11 @@ class _MyHomePageState extends State<MyHomePage> {
         )
       ],
     );
+    final txListWidget = Container(
+        height:
+            (MediaQuery.of(context).size.height - appBar.preferredSize.height) *
+                0.7,
+        child: TransactionList(_userTransaction, _deleteTransaction));
     return Scaffold(
       appBar: appBar,
       body: SingleChildScrollView(
@@ -111,38 +121,45 @@ class _MyHomePageState extends State<MyHomePage> {
             // mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text('Show Chart'),
-                    Switch(
-                        value: _showChart,
-                        onChanged: (val) {
-                          setState(() {
-                            _showChart = val;
-                          });
-                        })
-                  ]),
-              _showChart
-                  ? Container(
-                      height: (MediaQuery.of(context).size.height -
-                              appBar.preferredSize.height -
-                              MediaQuery.of(context).padding.top) *
-                          .7,
-                      child: Chart(_recentTransactions))
-                  : Container(
-                      height: (MediaQuery.of(context).size.height -
-                              appBar.preferredSize.height) *
-                          0.7,
-                      child: TransactionList(
-                          _userTransaction, _deleteTransaction)),
+              if (isLandscape)
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text('Show Chart'),
+                      Switch.adaptive(
+                          value: _showChart,
+                          onChanged: (val) {
+                            setState(() {
+                              _showChart = val;
+                            });
+                          })
+                    ]),
+              if (!isLandscape)
+                Container(
+                    height: (MediaQuery.of(context).size.height -
+                            appBar.preferredSize.height -
+                            mediaQuery.padding.top) *
+                        .3,
+                    child: Chart(_recentTransactions)),
+              if (!isLandscape) txListWidget,
+              if (isLandscape)
+                _showChart
+                    ? Container(
+                        height: (MediaQuery.of(context).size.height -
+                                appBar.preferredSize.height -
+                                mediaQuery.padding.top) *
+                            .7,
+                        child: Chart(_recentTransactions))
+                    : txListWidget,
             ]),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () => _startAddNewBottomSheet(context),
-      ),
+      floatingActionButton: Platform.isIOS
+          ? Container()
+          : FloatingActionButton(
+              child: Icon(Icons.add),
+              onPressed: () => _startAddNewBottomSheet(context),
+            ),
     );
   }
 }
